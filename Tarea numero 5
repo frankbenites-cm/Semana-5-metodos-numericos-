@@ -1,0 +1,123 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Convertir string a función
+def crear_funcion(expr):
+    def f(x):
+        return eval(expr)
+    return f
+
+def derivada(f, x, h=1e-6):
+    return (f(x+h) - f(x-h)) / (2*h)
+
+# MÉTODO DE BISECCIÓN
+def biseccion(f, a, b, tol):
+    if f(a)*f(b) > 0:
+        print("No hay cambio de signo en el intervalo.")
+        return None
+    
+    iteraciones = 0
+    while True:
+        c = (a + b) / 2
+        if abs(f(c)) < tol:
+            return c, iteraciones
+        
+        if f(a)*f(c) < 0:
+            b = c
+        else:
+            a = c
+        
+        iteraciones += 1
+
+# MÉTODO DE NEWTON
+def newton(f, x0, tol):
+    iteraciones = 0
+    while True:
+        df = derivada(f, x0)
+        if df == 0:
+            print("Derivada cero.")
+            return None
+        
+        x1 = x0 - f(x0)/df
+        
+        if abs(f(x1)) < tol:
+            return x1, iteraciones
+        
+        x0 = x1
+        iteraciones += 1
+
+# MÉTODO DE LA SECANTE
+def secante(f, x0, x1, tol):
+    iteraciones = 0
+    while True:
+        if f(x1) - f(x0) == 0:
+            print("División por cero.")
+            return None
+        
+        x2 = x1 - f(x1)*(x1 - x0)/(f(x1) - f(x0))
+        
+        if abs(f(x2)) < tol:
+            return x2, iteraciones
+        
+        x0, x1 = x1, x2
+        iteraciones += 1
+
+# GRAFICAR
+def graficar(f):
+    xmin = float(input("Ingrese el valor mínimo de x: "))
+    xmax = float(input("Ingrese el valor máximo de x: "))
+
+    x = np.linspace(xmin, xmax, 1000)
+    
+    try:
+        y = [f(i) for i in x]
+    except Exception as e:
+        print("Error al evaluar la función:", e)
+        return
+
+    plt.figure()
+    plt.axhline(0, color='black')  # eje X
+    plt.axvline(0, color='black')  # eje Y
+    plt.plot(x, y, label="f(x)")
+    plt.title("Gráfica de la función")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+# PROGRAMA PRINCIPAL
+metodo = input("Elija método (biseccion / newton / secante / comparar): ")
+expr = input("Ingrese la función (ej: x*np.cos(x)-1): ")
+tol = 1e-6
+
+f = crear_funcion(expr)
+
+graficar(f)
+
+if metodo == "biseccion":
+    a = float(input("Ingrese a: "))
+    b = float(input("Ingrese b: "))
+    resultado = biseccion(f, a, b, tol)
+    print(resultado)
+
+elif metodo == "newton":
+    x0 = float(input("Ingrese x0: "))
+    resultado = newton(f, x0, tol)
+    print(resultado)
+
+elif metodo == "secante":
+    x0 = float(input("Ingrese x0: "))
+    x1 = float(input("Ingrese x1: "))
+    resultado = secante(f, x0, x1, tol)
+    print(resultado)
+
+elif metodo == "comparar":
+    print("Bisección:")
+    print(biseccion(f, 0.6, 0.7, tol))
+    
+    print("Newton:")
+    print(newton(f, 0.5, tol))
+    
+    print("Secante:")
+    print(secante(f, 0.5, 0.7, tol))
